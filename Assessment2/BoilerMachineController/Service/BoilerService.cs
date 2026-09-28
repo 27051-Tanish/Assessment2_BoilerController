@@ -10,14 +10,14 @@ namespace BoilerMachineController.Service
     /// </summary>
     public class BoilerService
     {
-        private readonly LogRepository _logger;
+        private readonly ILogRepository _logger;
         public event Action<string> _EventHandler;
 
         /// <summary>
         /// Initializes the repository instance.
         /// </summary>
         /// <param name="logger">The instance of the logger repository.</param>
-        public BoilerService(LogRepository logger)
+        public BoilerService(ILogRepository logger)
         {
             this._logger = logger;
         }
@@ -27,7 +27,7 @@ namespace BoilerMachineController.Service
         /// </summary>
         /// <param name="boiler">The boiler which has to be started.</param>
         /// <returns>The task in asynchronous manner.</returns>
-        public async Task StartBoilingAsync(BoilerMachineInfo boiler)
+        public async Task StartBoilingAsync(BoilerMachineInfo boiler, CancellationToken cts)
         {    
             if (boiler.IsRunning)
             {
@@ -56,6 +56,15 @@ namespace BoilerMachineController.Service
                 _EventHandler.Invoke("[Warn]: The interlock switch is open. Please toggle it to 'close' to continue operation.");
                 return;
             }
+            if (cts.IsCancellationRequested)
+            {
+                boiler.IsRunning = false;
+                boiler.MachineStatus = MachineStatus.Idle;
+                boiler.SystemStatus = SystemStatus.Lockout;
+                _logger.WriteToFile("[Info]: Stopped the operation before completion.");
+                _EventHandler.Invoke("[Info]: Stopped the operation before completion.");
+                throw new TaskCanceledException();
+            }
 
             Stopwatch watch = Stopwatch.StartNew();
             boiler.IsRunning = true;
@@ -83,7 +92,7 @@ namespace BoilerMachineController.Service
         /// Stops the boiling sequence between any phases.
         /// </summary>
         /// <param name="boiler">The boiler which has to be stopped</param>
-        public void StopBoiling(BoilerMachineInfo boiler)
+        public void StopBoiling(BoilerMachineInfo boiler, CancellationToken cts)
         {
             if (boiler.IsRunning && !(boiler.MachineStatus == MachineStatus.Operational))
             {
@@ -91,6 +100,7 @@ namespace BoilerMachineController.Service
                 boiler.MachineStatus = MachineStatus.Idle;
                 _logger.WriteToFile($"[Warn]: The boiling operation is stopped before completion.");
                 _EventHandler.Invoke($"[Warn]: The boiling operation is stopped before completion.");
+                cts.ThrowIfCancellationRequested(); // Throws if cancellation requested, on clicking option 2 from the menu when boiler sequence is not in operational state.
             }
             else if(boiler.IsRunning && boiler.MachineStatus == MachineStatus.Operational)
             {
@@ -152,8 +162,8 @@ namespace BoilerMachineController.Service
             {
                 boiler.IsError = false;
                 boiler.SystemStatus = SystemStatus.Ready;
-                _logger.WriteToFile("[Info]: The lockout state is changed to ready.");
-                _EventHandler.Invoke("[Info]: The unknown error is resolved. The lockout state is changed to ready.");
+                _logger.WriteToFile("[Info]: The lockout state is changed.");
+                _EventHandler.Invoke("[Info]: The lockout state is changed.");
             }
 
             if (boiler.SwitchStatus == InterlockSwitchStatus.Open)

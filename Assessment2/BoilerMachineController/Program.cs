@@ -9,7 +9,7 @@ namespace BoilerMachineController
     {
         static void Main(string[] args)
         {
-            LogRepository logRepository = new LogRepository();
+            ILogRepository logRepository = new LogRepository();
             BoilerService boilerService = new BoilerService(logRepository);
             ConsoleView consoleView = new ConsoleView();
 

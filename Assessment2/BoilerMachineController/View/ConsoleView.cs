@@ -23,6 +23,13 @@
             return Console.ReadLine();
         }
 
+        public void ShowTitle(string title)
+        {
+            this.ShowMessage(new string('=', 25));
+            this.ShowMessage($"        {title}");
+            this.ShowMessage(new string('=', 25));
+        }
+
         /// <summary>
         /// Prompts user to enter a number, and if number is not valid display the error message else return the value.
         /// </summary>

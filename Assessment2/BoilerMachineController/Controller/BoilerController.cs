@@ -13,11 +13,15 @@ namespace BoilerMachineController.Controller
         private readonly BoilerMachineInfo _boiler;
         private readonly BoilerService _boilerService;
         private readonly ConsoleView _view;
+        CancellationTokenSource source;
+        CancellationToken token;
+
         public BoilerController(BoilerService boilerService, ConsoleView view)
         {
             this._boilerService = boilerService;
             this._view = view;
-
+            source = new CancellationTokenSource();
+            token = source.Token;
             _boiler = new BoilerMachineInfo(false, false, InterlockSwitchStatus.Open, MachineStatus.Idle, SystemStatus.Lockout);
             _boilerService._EventHandler += DisplayNotification;
         }
@@ -35,13 +39,14 @@ namespace BoilerMachineController.Controller
         /// Starts the main menu.
         /// </summary>
         public void RunApplication()
-        {
+        {           
             int choice;
             MainMenu menu;
             this._view.ShowMessage("==== Boiler Controller Initialized ====");
 
             do
             {
+                this._view.ShowTitle("MAIN MENU");
                 this._view.ShowMessage("\n[1]. Start boiling\n[2]. Stop boiling\n[3]. Simulate Error\n[4]. Toggle switch\n" +
                     "[5]. Reset lockout\n[6]. View log\n[7]. Exit\n");
                 choice = this._view.GetChoice("Enter your choice: ", "Please select from the menu [1 to 7].");
@@ -82,7 +87,14 @@ namespace BoilerMachineController.Controller
         /// </summary>
         private void StartBoilerSequence()
         {
-            _ = _boilerService.StartBoilingAsync(_boiler);
+            try
+            {
+                _ = _boilerService.StartBoilingAsync(_boiler, token);
+            }
+            catch (TaskCanceledException ex)
+            {
+                this._view.ShowMessage($"{ex.Message}");
+            }
         }
 
         /// <summary>
@@ -95,7 +107,7 @@ namespace BoilerMachineController.Controller
                 this._view.ShowMessage("The boiler is currently not started.");
                 return;
             }
-            _boilerService.StopBoiling(_boiler);
+            _boilerService.StopBoiling(_boiler, token);
         }
 
         /// <summary>

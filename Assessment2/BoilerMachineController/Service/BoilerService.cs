@@ -6,7 +6,7 @@ using BoilerMachineController.Repository;
 namespace BoilerMachineController.Service
 {
     /// <summary>
-    /// Provides various business logics for performing different sequences.
+    /// Provides various methods for performing different actions and log their result in the file and notify using an event.
     /// </summary>
     public class BoilerService
     {
@@ -22,6 +22,11 @@ namespace BoilerMachineController.Service
             this._logger = logger;
         }
 
+        /// <summary>
+        /// Starts the boiler sequence asynchronously.
+        /// </summary>
+        /// <param name="boiler">The boiler which has to be started.</param>
+        /// <returns>The task in asynchronous manner.</returns>
         public async Task StartBoilingAsync(BoilerMachineInfo boiler)
         {    
             if (boiler.IsRunning)
@@ -74,6 +79,10 @@ namespace BoilerMachineController.Service
             _EventHandler.Invoke($"[{DateTime.Now}] The machine is currently operational.");
         }
 
+        /// <summary>
+        /// Stops the boiling sequence between any phases.
+        /// </summary>
+        /// <param name="boiler">The boiler which has to be stopped</param>
         public void StopBoiling(BoilerMachineInfo boiler)
         {
             if (boiler.IsRunning && !(boiler.MachineStatus == MachineStatus.Operational))
@@ -92,12 +101,16 @@ namespace BoilerMachineController.Service
             }
         }
 
+        /// <summary>
+        /// Simulate an error to stop the boiling sequence.
+        /// </summary>
+        /// <param name="boiler">The boiler in which the error needs to be simulated.</param>
         public void SimulateBoilerError(BoilerMachineInfo boiler)
         {
             if (!boiler.IsRunning)
             {
-                _logger.WriteToFile("[Error], The boiler is not running cannot simulate error.");
-                _EventHandler.Invoke("[Error], The boiler is not running cannot simulate error.");
+                _logger.WriteToFile("[Error]: The boiler is not running cannot simulate error.");
+                _EventHandler.Invoke("[Error]: The boiler is not running cannot simulate error.");
             }
             else if (!boiler.IsError)
             {
@@ -109,6 +122,10 @@ namespace BoilerMachineController.Service
             }
         }
 
+        /// <summary>
+        /// Toggle the interlock switch between open and close.
+        /// </summary>
+        /// <param name="boiler">The boiler in which their switch needs to be toggled.</param>
         public void ToggleSwitch(BoilerMachineInfo boiler)
         {
             if (boiler.SwitchStatus == InterlockSwitchStatus.Open)
@@ -125,23 +142,31 @@ namespace BoilerMachineController.Service
             }
         }
 
+        /// <summary>
+        /// Resets the systems state.
+        /// </summary>
+        /// <param name="boiler">The boiler which state needs to be reset.</param>
         public void ResetLockoutState(BoilerMachineInfo boiler)
         {
             if (boiler.IsError || boiler.SystemStatus == SystemStatus.Lockout)
             {
                 boiler.IsError = false;
                 boiler.SystemStatus = SystemStatus.Ready;
-                _logger.WriteToFile("[Info]: The unknown error is resolved.");
-                _EventHandler.Invoke("[Info]: The unknown error is resolved.");
+                _logger.WriteToFile("[Info]: The lockout state is changed to ready.");
+                _EventHandler.Invoke("[Info]: The unknown error is resolved. The lockout state is changed to ready.");
             }
 
             if (boiler.SwitchStatus == InterlockSwitchStatus.Open)
             {
-                _logger.WriteToFile("Please change the interlock switch to 'close' state.");
-                _EventHandler.Invoke("Please change the interlock switch to 'close' state.");
+                _logger.WriteToFile("[Info]: Please change the interlock switch to 'close' state to start the boiler.");
+                _EventHandler.Invoke("[Info]: Please change the interlock switch to 'close' state to start the boiler.");
             }
         }
 
+        /// <summary>
+        /// Reads the logged details.
+        /// </summary>
+        /// <returns>The list of logged information.</returns>
         public IReadOnlyList<string> ReadLogDetails()
         {
             return _logger.ReadFromFile();

@@ -1,11 +1,13 @@
 ﻿using BoilerMachineController.Model;
 using BoilerMachineController.Model.Core.Enums;
-using BoilerMachineController.Repository;
 using BoilerMachineController.Service;
 using BoilerMachineController.View;
 
 namespace BoilerMachineController.Controller
 {
+    /// <summary>
+    /// Acts as the orchestrator between view and service.
+    /// </summary>
     public class BoilerController
     {
         private readonly BoilerMachineInfo _boiler;
@@ -20,11 +22,18 @@ namespace BoilerMachineController.Controller
             _boilerService._EventHandler += DisplayNotification;
         }
 
+        /// <summary>
+        /// Displays the message which is passed by the event.
+        /// </summary>
+        /// <param name="message">The message to be displayed.</param>
         private void DisplayNotification(string message)
         {
             this._view.ShowMessage(message);
         }
 
+        /// <summary>
+        /// Starts the main menu.
+        /// </summary>
         public void RunApplication()
         {
             int choice;
@@ -68,11 +77,17 @@ namespace BoilerMachineController.Controller
             while (menu != MainMenu.Exit);
         }
 
+        /// <summary>
+        /// Starts the boiler sequence asynchronously.
+        /// </summary>
         private void StartBoilerSequence()
         {
             _ = _boilerService.StartBoilingAsync(_boiler);
         }
 
+        /// <summary>
+        /// Stops the boiler sequence.
+        /// </summary>
         private void StopBoilerSequence()
         {
             if (_boiler.MachineStatus == MachineStatus.Idle)
@@ -83,21 +98,33 @@ namespace BoilerMachineController.Controller
             _boilerService.StopBoiling(_boiler);
         }
 
+        /// <summary>
+        /// Simulate an error and stop the boiler sequence.
+        /// </summary>
         private void SimulateError()
         {
             _boilerService.SimulateBoilerError(_boiler);
         }
 
+        /// <summary>
+        /// Toggle the interlock switch between 'open' and 'close'.
+        /// </summary>
         private void ToggleInterLockSwitch()
         {
             _boilerService.ToggleSwitch(_boiler);
         }
 
+        /// <summary>
+        /// Resets the error state and provide proper prompt to start the boiler.
+        /// </summary>
         private void ResetLockout()
         {
             _boilerService.ResetLockoutState(_boiler);
         }
 
+        /// <summary>
+        /// Displays the events and errors logged in a separate file.
+        /// </summary>
         private void ViewLog()
         {
             IReadOnlyList<string> logs = _boilerService.ReadLogDetails();

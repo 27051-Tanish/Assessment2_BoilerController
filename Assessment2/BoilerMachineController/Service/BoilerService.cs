@@ -55,16 +55,7 @@ namespace BoilerMachineController.Service
                 _logger.WriteToFile("[Warn]: The interlock switch is open. Please toggle it to 'close' to continue operation.");
                 _EventHandler.Invoke("[Warn]: The interlock switch is open. Please toggle it to 'close' to continue operation.");
                 return;
-            }
-            if (cts.IsCancellationRequested)
-            {
-                boiler.IsRunning = false;
-                boiler.MachineStatus = MachineStatus.Idle;
-                boiler.SystemStatus = SystemStatus.Lockout;
-                _logger.WriteToFile("[Info]: Stopped the operation before completion.");
-                _EventHandler.Invoke("[Info]: Stopped the operation before completion.");
-                throw new TaskCanceledException();
-            }
+            }    
 
             Stopwatch watch = Stopwatch.StartNew();
             boiler.IsRunning = true;
@@ -74,6 +65,17 @@ namespace BoilerMachineController.Service
 
             _logger.WriteToFile($"Pre-Purge is completed in {watch.ElapsedMilliseconds} ms.");
             _EventHandler.Invoke($"[{DateTime.Now}] Pre-Purge is completed in {watch.ElapsedMilliseconds} ms.");
+
+            // When this property is true, The TaskCanceledException is thrown.
+            if (cts.IsCancellationRequested)
+            {
+                boiler.IsRunning = false;
+                boiler.MachineStatus = MachineStatus.Idle;
+                boiler.SystemStatus = SystemStatus.Lockout;
+                _logger.WriteToFile("[Info]: Stopped the operation before completion.");
+                _EventHandler.Invoke("[Info]: Stopped the operation before completion.");
+                throw new TaskCanceledException();
+            }
 
             watch.Restart();
             boiler.MachineStatus = MachineStatus.Ignition;

@@ -7,11 +7,10 @@ namespace BoilerMachineController.Model
     /// </summary>
     public class BoilerMachineInfo
     {
-        public BoilerMachineInfo(bool isRunning, bool isError, DateTime startTime, InterlockSwitchStatus switchStatus, MachineStatus machineStatus, SystemStatus systemStatus)
+        public BoilerMachineInfo(bool isRunning, bool isError, InterlockSwitchStatus switchStatus, MachineStatus machineStatus, SystemStatus systemStatus)
         {
             this.IsRunning = isRunning;
             this.IsError = isError;
-            this.StartTime = startTime;
             this.SwitchStatus = switchStatus;
             this.MachineStatus = machineStatus;
             this.SystemStatus = systemStatus;

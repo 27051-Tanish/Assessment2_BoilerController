@@ -6,12 +6,17 @@
     public enum MachineStatus
     {
         /// <summary>
-        /// Represents the first phase of the boiling process.
+        /// Represents the initial phase.
+        /// </summary>
+        Idle,
+
+        /// <summary>
+        /// Represents the second phase of the boiling process.
         /// </summary>
         PrePurge,
 
         /// <summary>
-        /// Represents the second phase of the boiling process.
+        /// Represents the third phase of the boiling process.
         /// </summary>
         Ignition,
 

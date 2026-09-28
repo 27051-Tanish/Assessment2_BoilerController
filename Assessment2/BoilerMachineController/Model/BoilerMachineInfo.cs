@@ -7,10 +7,11 @@ namespace BoilerMachineController.Model
     /// </summary>
     public class BoilerMachineInfo
     {
-        public BoilerMachineInfo(bool isRunning, bool isError, InterlockSwitchStatus switchStatus, MachineStatus machineStatus, SystemStatus systemStatus)
+        public BoilerMachineInfo(bool isRunning, bool isError, DateTime startTime, InterlockSwitchStatus switchStatus, MachineStatus machineStatus, SystemStatus systemStatus)
         {
             this.IsRunning = isRunning;
             this.IsError = isError;
+            this.StartTime = startTime;
             this.SwitchStatus = switchStatus;
             this.MachineStatus = machineStatus;
             this.SystemStatus = systemStatus;
@@ -19,27 +20,32 @@ namespace BoilerMachineController.Model
         /// <summary>
         /// Gets or sets whether the machine is running or not.
         /// </summary>
-        bool IsRunning { get; set; }
+        public bool IsRunning { get; set; }
 
         /// <summary>
         /// Gets or sets whether the machine encounters an error or not.
         /// </summary>
-        bool IsError { get; set; }
+        public bool IsError { get; set; }
+
+        /// <summary>
+        /// Gets or sets the starting time of the operation.
+        /// </summary>
+        public DateTime StartTime { get; set; }
 
         /// <summary>
         /// Gets or sets the status of the interlock switch.
         /// </summary>
-        InterlockSwitchStatus SwitchStatus { get; set; }
+        public InterlockSwitchStatus SwitchStatus { get; set; }
 
         /// <summary>
         /// Gets or sets the status of the machine.
         /// </summary>
-        MachineStatus MachineStatus { get; set; }
+        public MachineStatus MachineStatus { get; set; }
 
         /// <summary>
         /// Gets or sets the status of the system.
         /// </summary>
-        SystemStatus SystemStatus { get; set; }
+        public SystemStatus SystemStatus { get; set; }
 
     }
 }

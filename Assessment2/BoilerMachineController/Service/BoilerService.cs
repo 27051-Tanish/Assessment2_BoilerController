@@ -55,8 +55,10 @@ namespace BoilerMachineController.Service
                 _logger.WriteToFile("[Warn]: The interlock switch is open. Please toggle it to 'close' to continue operation.");
                 _EventHandler.Invoke("[Warn]: The interlock switch is open. Please toggle it to 'close' to continue operation.");
                 return;
-            }    
+            }
 
+            _logger.WriteToFile("Pre-Purge state is started.");
+            _EventHandler.Invoke($"[Info]: Pre-Purge state is started.");
             Stopwatch watch = Stopwatch.StartNew();
             boiler.IsRunning = true;
             boiler.MachineStatus = MachineStatus.PrePurge;
@@ -119,7 +121,12 @@ namespace BoilerMachineController.Service
         /// <param name="boiler">The boiler in which the error needs to be simulated.</param>
         public void SimulateBoilerError(BoilerMachineInfo boiler)
         {
-            if (!boiler.IsRunning)
+            if (boiler.MachineStatus == MachineStatus.PrePurge || boiler.MachineStatus == MachineStatus.Ignition)
+            {
+                _logger.WriteToFile($"[Warn]: Cannot simulate error in {MachineStatus.PrePurge} and {MachineStatus.Ignition} state.");
+                _EventHandler.Invoke($"[Warn]: Cannot simulate error in {MachineStatus.PrePurge} and {MachineStatus.Ignition} state.");
+            }
+            else if (!boiler.IsRunning)
             {
                 _logger.WriteToFile("[Error]: The boiler is not running cannot simulate error.");
                 _EventHandler.Invoke("[Error]: The boiler is not running cannot simulate error.");
